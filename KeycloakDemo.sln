@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeycloakDemo.Api", "KeycloakDemo.Api\KeycloakDemo.Api.csproj", "{B6B73FBF-7AF4-4DE3-B6FC-EDE8A6803233}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "keycloakdemoreact", "keycloakdemoreact\keycloakdemoreact.esproj", "{472ED97F-A8B2-408F-BB51-F3605122907A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6B73FBF-7AF4-4DE3-B6FC-EDE8A6803233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6B73FBF-7AF4-4DE3-B6FC-EDE8A6803233}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6B73FBF-7AF4-4DE3-B6FC-EDE8A6803233}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6B73FBF-7AF4-4DE3-B6FC-EDE8A6803233}.Release|Any CPU.Build.0 = Release|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{472ED97F-A8B2-408F-BB51-F3605122907A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CCB34F18-367F-4ACB-9A72-7AF0903E244A}
+	EndGlobalSection
+EndGlobal
