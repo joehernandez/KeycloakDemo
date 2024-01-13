@@ -25,6 +25,7 @@
 - Password: test1
 
 ## SPA Configuration
-
+- Keycloak-js docs: https://www.keycloak.org/docs/latest/securing_apps/#_javascript_adapter
+- Another resource: https://github.com/hexadefence/keycloak-react-example/blob/master/src/App.js
 
 ## ASP.NET Core Web API Configuration
