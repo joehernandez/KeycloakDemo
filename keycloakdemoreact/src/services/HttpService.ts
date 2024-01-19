@@ -8,14 +8,13 @@ const HttpMethods = {
 };
 
 const _axios = axios.create();
+const _kc = UserService.keycloak;
 
 const configure = () => {
     _axios.interceptors.request.use((config) => {
-        if (UserService.isLoggedIn()) {
-            const updateTokenCallback = () => {
-                config.headers.Authorization = `Bearer ${UserService.getToken()}`;
-            };
-            UserService.updateToken(updateTokenCallback);
+        if (_kc.authenticated) {
+            _kc.updateToken();
+            config.headers.Authorization = `Bearer ${_kc.token}`;
         }
         return config;
     });
