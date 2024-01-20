@@ -13,10 +13,6 @@ const initKeycloak = (onAuthenticationCallback:() => void) => {
     })
 };
 
-const getUsername = () => keycloak.tokenParsed?.preferred_username;
-
-const hasRole = (roles: string[]) => roles.some((role: string) => keycloak.hasRealmRole(role));
-
 const UserService = {
     initKeycloak,
     keycloak,
