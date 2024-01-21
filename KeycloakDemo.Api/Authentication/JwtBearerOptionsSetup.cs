@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace KeycloakDemo.Api.Authentication;
 public sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOptions>
@@ -15,7 +16,12 @@ public sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOpti
         options.Audience = _authenticationOptions.Audience;
         options.MetadataAddress = _authenticationOptions.MetadataUrl;
         options.RequireHttpsMetadata = _authenticationOptions.RequireHttpsMetadata;
-        options.TokenValidationParameters.ValidIssuer = _authenticationOptions.Issuer;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidIssuer = _authenticationOptions.Issuer
+        };
     }
 
     public void Configure(string? name, JwtBearerOptions options)
