@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -25,14 +22,13 @@ builder.Services.AddCors(options =>
                       policy =>
                       {
                           policy
-                            .WithOrigins("http://localhost:5000",
-                                              "http://localhost:5001")
+                            .WithOrigins(
+                                "http://localhost:5000",
+                                "http://localhost:5001")
                             .AllowAnyHeader()
                             .AllowAnyMethod();
                       });
 });
-
-// identity.keycloak:8080
 
 var app = builder.Build();
 
@@ -44,7 +40,6 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-
 
 app.UseAuthentication();
 app.UseCors(AllowSpecificOrigins);
