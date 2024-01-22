@@ -13,6 +13,22 @@
 - E.g., create the following realm roles
     - **admin**
     - **user**
+- Additional setup to make roles work out-of-the-box with ASP.NET Core `JwtBearer`
+    - Click on **Client scopes** in left sidebar
+    - Click on **roles** link (under **Name**)
+    - Click on the **Mappers** tab => **Add mapper** button
+        - Select **By configuration**
+        - Select **User Realm Role**
+    - Fill in as follows:
+        - Name: Something descriptive (e.g. **Realm roles for ASP.NET Core JwtBearer**)
+        - Realm Role prefix: leave blank
+        - Multivalued: **On**
+        - Token Claim Name: **roles** 
+        - Leave the rest with default values
+    - Click on **Save**
+    - Used [this](https://stackoverflow.com/questions/56327794/role-based-authorization-using-keycloak-and-net-core) Stack Overflow question/answer for reference 
+        - Use the 2nd alternative in the accepted answer
+        - This leaves the original `"realm_roles": { "roles": [...]}` top-level object and adds the new `"roles": [...]` top-level object needed by `JwtBearer`
 
 ### Client Configuration: Front-End SPA
 - Click on **Clients** >> **Create client**
@@ -244,4 +260,5 @@ app.UseAuthorization();
     - Scope: use space-delimited list; by default, includes **profile** and **email**
 - Click on **Get New Access Token**, then on **Use Token** after successful login
 - To use a different user, click on the **Get New Access Token** button once again and then on **Use Token** after successful login
+    - May need to first click on the **Clear cookies** button
 - Used [this help article](https://learning.postman.com/docs/sending-requests/authorization/oauth-20/)
