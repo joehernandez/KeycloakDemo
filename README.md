@@ -1,6 +1,19 @@
 # Keycloak with ASP.NET Core Web API and SPA
 
 ## Keycloak Configuration
+### Create a New Realm (if needed)
+- Click on the dropdown that shows the current realm
+- Click on **Create realm**
+- Enter the **Realm name** and then click on **Create**
+
+### Create Realm Roles
+- Click on **Realm roles** in left sidebar
+- Click on the **Create role** button
+- Enter the **Role name** and click on the **Save** button
+- E.g., create the following realm roles
+    - **admin**
+    - **user**
+
 ### Client Configuration: Front-End SPA
 - Click on **Clients** >> **Create client**
 - General Settings
@@ -36,9 +49,14 @@
     - Click on **Next**
     - Click on **Save**
 
-### Create a test user in Keycloak
-- Username: test1@test.com
-- Password: test1
+### Create at least one test user per realm role in Keycloak
+- Role: **user** (under **Role mapping**)
+    - Username: test1@test.com
+    - Password: test1
+- Role: **admin**
+    - Username: admin1@test.com
+    - Password: admin1
+
 
 ## SPA Configuration
 ### Use Keycloak JS in SPA
@@ -224,5 +242,6 @@ app.UseAuthorization();
     - Client ID: keycloak-demo-frontend
         - Use the SPA front-end client created in the Keycloak setup
     - Scope: use space-delimited list; by default, includes **profile** and **email**
-- Click on **Get New Access Token**, then on **Use Token**
+- Click on **Get New Access Token**, then on **Use Token** after successful login
+- To use a different user, click on the **Get New Access Token** button once again and then on **Use Token** after successful login
 - Used [this help article](https://learning.postman.com/docs/sending-requests/authorization/oauth-20/)
