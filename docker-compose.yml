@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_DB=ApiDB
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=super_secret_password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - api_db:/var/lib/postgresql/data
     ports:
@@ -27,7 +27,7 @@ services:
       - 5050:80
     environment:
       PGADMIN_DEFAULT_EMAIL: user@123.com
-      PGADMIN_DEFAULT_PASSWORD: user@123
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
@@ -43,9 +43,9 @@ services:
       KC_DB_URL_HOST: identity.keycloak.db
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: super_secret_password
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: super_secret_password
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
     ports:
       - 8080:8080
     depends_on:
@@ -59,7 +59,7 @@ services:
     environment:
       - POSTGRES_DB=keycloak
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=super_secret_password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - keycloak_db:/var/lib/postgresql/data
     ports:
