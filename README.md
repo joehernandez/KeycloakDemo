@@ -111,6 +111,7 @@ Add `Microsoft.AspnetCore.Authentication.JwtBearer`
 
 ### Appsettings
 - Add following to `appsettings.json`  
+    - For `Audience` value below, get token returned to SPA client after logging in and inspect it using jwt.io
 ```json
 {
     ...
@@ -121,7 +122,6 @@ Add `Microsoft.AspnetCore.Authentication.JwtBearer`
         "RequireHttpsMetadata": false
     }
 }
-    - For `Audience` value, get token returned to SPA client after logging in and inspect it using jwt.io
 ```
 
 ### AuthenticationOptions and JwtBearerOptionsSetup
