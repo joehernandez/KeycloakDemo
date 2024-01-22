@@ -13,7 +13,9 @@
     - **Authentication flow**: check **Standard Flow** only
     - Click on **Next**
 - Login settings: only following needed
-    - **Valid redirect URIs**: http://localhost:5000/*
+    - **Valid redirect URIs**: 
+        - `http://localhost:5000/*`: for SPA
+        - `https://oauth.pstmn.io/v1/browser-callback/*`: for Postman
     - **Web origins**: http://localhost:5000
         - **Note** forward slash + asterisk (`/*`) at end of first one
             - If **Valid redirect URIs** is missing `/*` you get `Invalid redirect_uri paramater` errors
@@ -206,3 +208,21 @@ app.UseAuthentication();
 app.UseCors(AllowSpecificOrigins); // <== ADDED!
 app.UseAuthorization();
 ```
+
+### Postman
+- Start a new collection in Postman
+- In the **Authorization** tab, select **OAuth 2.0** from the dropdown
+- In the **Configure New Token** section, enter the following values:
+    - Name: Give the token a name, e.g. Keycloak Demo Token
+    - Grant Type: Authorization Code
+    - Callback URL: https://oauth.pstmn.io/v1/browser-callback
+        - Be sure this was added as a **Valid Redirect URI** during the SPA frontend Keycloak setup
+    - Auth URL: http://localhost:8080/realms/keycloak-demo/protocol/openid-connect/auth
+    - Access Token URL: http://localhost:8080/realms/keycloak-demo/protocol/openid-connect/token
+        - Both **Auth URL** and **Access Token URL** can be obtained by using the Keycloak Realm well-known endpoints
+        - In Keycloak admin UI: **Realm Settings** => **General** => **Endpoints** => click on **OpenID Endpoint Configuration** link
+    - Client ID: keycloak-demo-frontend
+        - Use the SPA front-end client created in the Keycloak setup
+    - Scope: use space-delimited list; by default, includes **profile** and **email**
+- Click on **Get New Access Token**, then on **Use Token**
+- Used [this help article](https://learning.postman.com/docs/sending-requests/authorization/oauth-20/)
