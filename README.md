@@ -5,14 +5,22 @@
 - Click on the dropdown that shows the current realm
 - Click on **Create realm**
 - Enter the **Realm name** and then click on **Create**
+- Configure the realm as needed using the Keycloak [guide](https://www.keycloak.org/docs/latest/server_admin/index.html#configuring-realms)
+    - At a minimum, configure: **Login** and **Email**
 
 ### Create Realm Roles
 - Click on **Realm roles** in left sidebar
 - Click on the **Create role** button
 - Enter the **Role name** and click on the **Save** button
-- E.g., create the following realm roles
-    - **admin**
-    - **user**
+    - E.g., create the following realm roles
+        - **admin**
+        - **user**
+- To assign a default role during user registration
+    - Click on **Realm Roles** in left sidebar
+    - Click on the **default-roles-{realm-name}** link (e.g. [default-roles-keyclock-demo]())
+    - Click on the **Assign role** button
+    - Check the role that should be assigned during user registration (e.g. **user**)
+    - Click on the **Assign** button
 - Additional setup to make roles work out-of-the-box with ASP.NET Core `JwtBearer`
     - Click on **Client scopes** in left sidebar
     - Click on **roles** link (under **Name**)
