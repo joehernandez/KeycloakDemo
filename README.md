@@ -1,6 +1,35 @@
 # Keycloak with ASP.NET Core Web API and SPA
 
 ## Keycloak Configuration
+### Create a New Realm (if needed)
+- Click on the dropdown that shows the current realm
+- Click on **Create realm**
+- Enter the **Realm name** and then click on **Create**
+
+### Create Realm Roles
+- Click on **Realm roles** in left sidebar
+- Click on the **Create role** button
+- Enter the **Role name** and click on the **Save** button
+- E.g., create the following realm roles
+    - **admin**
+    - **user**
+- Additional setup to make roles work out-of-the-box with ASP.NET Core `JwtBearer`
+    - Click on **Client scopes** in left sidebar
+    - Click on **roles** link (under **Name**)
+    - Click on the **Mappers** tab => **Add mapper** button
+        - Select **By configuration**
+        - Select **User Realm Role**
+    - Fill in as follows:
+        - Name: Something descriptive (e.g. **Realm roles for ASP.NET Core JwtBearer**)
+        - Realm Role prefix: leave blank
+        - Multivalued: **On**
+        - Token Claim Name: **roles** 
+        - Leave the rest with default values
+    - Click on **Save**
+    - Used [this](https://stackoverflow.com/questions/56327794/role-based-authorization-using-keycloak-and-net-core) Stack Overflow question/answer for reference 
+        - Use the 2nd alternative in the accepted answer
+        - This leaves the original `"realm_roles": { "roles": [...]}` top-level object and adds the new `"roles": [...]` top-level object needed by `JwtBearer`
+
 ### Client Configuration: Front-End SPA
 - Click on **Clients** >> **Create client**
 - General Settings
@@ -36,9 +65,14 @@
     - Click on **Next**
     - Click on **Save**
 
-### Create a test user in Keycloak
-- Username: test1@test.com
-- Password: test1
+### Create at least one test user per realm role in Keycloak
+- Role: **user** (under **Role mapping**)
+    - Username: test1@test.com
+    - Password: test1
+- Role: **admin**
+    - Username: admin1@test.com
+    - Password: admin1
+
 
 ## SPA Configuration
 ### Use Keycloak JS in SPA
@@ -224,5 +258,7 @@ app.UseAuthorization();
     - Client ID: keycloak-demo-frontend
         - Use the SPA front-end client created in the Keycloak setup
     - Scope: use space-delimited list; by default, includes **profile** and **email**
-- Click on **Get New Access Token**, then on **Use Token**
+- Click on **Get New Access Token**, then on **Use Token** after successful login
+- To use a different user, click on the **Get New Access Token** button once again and then on **Use Token** after successful login
+    - May need to first click on the **Clear cookies** button
 - Used [this help article](https://learning.postman.com/docs/sending-requests/authorization/oauth-20/)
