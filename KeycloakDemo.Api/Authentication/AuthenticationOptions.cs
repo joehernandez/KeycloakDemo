@@ -2,8 +2,10 @@
 
 public sealed class AuthenticationOptions
 {
-    public string Audience { get; set; } = string.Empty;
+    public const string SectionName = "Authentication";
+
     public string MetadataUrl { get; set; } = string.Empty;
-    public bool RequireHttpsMetadata { get; set; }
     public string Issuer { get; set; } = string.Empty;
+    public bool RequireHttpsMetadata { get; set; }
+    public string RsaPublicKey { get; set; } = string.Empty;
 }

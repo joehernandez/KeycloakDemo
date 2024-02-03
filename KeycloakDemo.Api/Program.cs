@@ -8,26 +8,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var config = builder.Configuration;
-builder.Services.Configure<AuthenticationOptions>(config.GetSection("Authentication"));
-builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
+builder.Services.Configure<AuthenticationOptions>(config.GetSection(AuthenticationOptions.SectionName));
+builder.Services.AddAuthenticationWithJwt(config, builder.Environment.IsDevelopment());
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
-
-const string AllowSpecificOrigins = "_allowSpecificOrigins";
+var allowedOrigins = config.GetSection("CorsAllowedOrigins").Get<List<string>>();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: AllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy
-                            .WithOrigins(
-                                "http://localhost:5000",
-                                "http://localhost:5001")
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                      });
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy
+            .WithOrigins(allowedOrigins?.ToArray() ?? [""])
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        });
 });
 
 var app = builder.Build();
@@ -42,7 +36,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseCors(AllowSpecificOrigins);
+app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();

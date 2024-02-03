@@ -53,25 +53,12 @@
     - **Valid redirect URIs**: 
         - `http://localhost:5000/*`: for SPA
         - `https://oauth.pstmn.io/v1/browser-callback/*`: for Postman
-    - **Web origins**: http://localhost:5000
+    - **Web origins**: `http://localhost:5000`, `https://oauth.pstmn.io`
         - **Note** forward slash + asterisk (`/*`) at end of first one
             - If **Valid redirect URIs** is missing `/*` you get `Invalid redirect_uri paramater` errors
         - **Note** no trailing forward slash (`/`) on second one
             - If **Web Origins** has a trailing slash, you get CORS errors
-        - Instead of specifying URLs, use `+` to allow all origins specified in valid redirect URIs
-        
-### Client Configuration: Web API (Client Credentials in OAuth2)
-- Click on **Clients** >> **Create client**
-- General Settings
-    - Enter **Client ID** (e.g. keycloak-demo-backend); 
-    - Optionally, enter a **Name**
-    - Click on **Next**
-- Capability Config
-    - **Client authentication**: on
-    - **Authorization**: off
-    - **Authentication flow**: check **Service accounts roles** only
-    - Click on **Next**
-    - Click on **Save**
+        - **Instead of specifying URLs, use `+` to allow all origins specified in valid redirect URIs** (*this is the method I used*)
 
 ### Create at least one test user per realm role in Keycloak
 - Role: **user** (under **Role mapping**)
@@ -150,104 +137,153 @@ export default UnauthenticatedUser
 - Keycloak-js docs: https://www.keycloak.org/docs/latest/securing_apps/#_javascript_adapter
 
 ## ASP.NET Core Web API Configuration
+### The blog post that helped me the most in putting this together was [this one](https://blog.devgenius.io/security-in-react-and-webapi-in-asp-net-core-c-with-authentification-and-authorization-by-keycloak-f890d340d093)
+Without using the public key as described in the blog post, I could not get the Web API JWT security middleware to validate the Keycloak token
+
 ### Nuget package
 Add `Microsoft.AspnetCore.Authentication.JwtBearer`
 
 ### Appsettings
 - Add following to `appsettings.json`  
-    - For `Audience` value below, get token returned to SPA client after logging in and inspect it using jwt.io
+    - `RsaPublicKey` is in user secrets **not** because it needs to be kept a secret but because it will be different on each development machine and different environments (e.g. **Test**, **Prod**)
 ```json
 {
     ...
     "Authentication": {
-        "Audience": "account",
-        "ValidIssuer": "http://localhost:8080/realms/keycloak-demo",
-        "MetadataUrl": "http://localhost:8080/realms/keycloak-demo/.well-known/openid-configuration",
-        "RequireHttpsMetadata": false
+        "MetadataUrl": "http://localhost:8890/realms/strainth/.well-known/openid-configuration",
+        "Issuer": "http://localhost:8890/realms/strainth",
+        "RequireHttpsMetadata": false,
+        "RsaPublicKey": "IN_USER_SECRETS"
     }
 }
 ```
 
-### AuthenticationOptions and JwtBearerOptionsSetup
+### AuthenticationOptions and AddAuthExtensions
 - `AuthenticationOptions.cs`
 ```csharp
 public sealed class AuthenticationOptions
 {
-    public string Audience { get; set; } = string.Empty;
+    public const string SectionName = "Authentication";
+
     public string MetadataUrl { get; set; } = string.Empty;
-    public bool RequireHttpsMetadata { get; set; }
     public string Issuer { get; set; } = string.Empty;
+    public bool RequireHttpsMetadata { get; set; }
+    public string RsaPublicKey { get; set; } = string.Empty;
 }
 ```
-- `JwtBearerOptionsSetup`
+- `AddAuthExtensions`
+    - The `JwtBearerEvents` are useful when setting up initially for debugging purposes, but are not necessary for functionality and may be removed
 ```csharp
-public sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOptions>
+public static class AddAuthExtensions
 {
-    private readonly AuthenticationOptions _authenticationOptions;
-    public JwtBearerOptionsSetup(IOptions<AuthenticationOptions> authenticationOptions)
+    public static IServiceCollection AddAuthenticationWithJwt(this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        _authenticationOptions = authenticationOptions.Value;
-    }
-    public void Configure(JwtBearerOptions options)
-    {
-        options.Audience = _authenticationOptions.Audience;
-        options.MetadataAddress = _authenticationOptions.MetadataUrl;
-        options.RequireHttpsMetadata = _authenticationOptions.RequireHttpsMetadata;
-        options.TokenValidationParameters = new TokenValidationParameters
+        var authenticationBuilder = services.AddAuthentication(options =>
         {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidIssuer = _authenticationOptions.Issuer
-        };
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        });
+        var authOptions = configuration.GetSection(AuthenticationOptions.SectionName).Get<AuthenticationOptions>()!;
+        authenticationBuilder.AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = authOptions.RequireHttpsMetadata;
+            options.MetadataAddress = authOptions.MetadataUrl;
+
+            #region == JWT Token Validation ==
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = true,
+                ValidIssuer = authOptions.Issuer,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = BuildRsaKey(authOptions.RsaPublicKey),
+                ValidateLifetime = true,
+            };
+            #endregion
+            #region == Event Authentication Handlers ==
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = c =>
+                {
+                    Console.WriteLine("User successfully authenticated");
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = c =>
+                {
+                    c.NoResult();
+                    c.Response.ContentType = "text/plain";
+                    if (isDevelopment)
+                    {
+                        return c.Response.WriteAsync(c.Exception.ToString());
+                    }
+                    return c.Response.WriteAsync("An error occured processing your authentication.");
+                }
+            };
+            #endregion
+        });
+        return services;
     }
-    public void Configure(string? name, JwtBearerOptions options)
+    private static RsaSecurityKey BuildRsaKey(string publicKey)
     {
-        Configure(options);
+        var rsa = RSA.Create();
+        rsa.ImportSubjectPublicKeyInfo(
+            source: Convert.FromBase64String(publicKey),
+            bytesRead: out _);
+        var issuerSigningKey = new RsaSecurityKey(rsa);
+        return issuerSigningKey;
     }
 }
 ```
 
 ### JWT Configuration in `Program.cs`
-- Make use of `AuthenticationOptions` and `JwtBearerOptionsSetup`
+- Make use of `AuthenticationOptions` and `AddAuthExtensions`
     - Configure Authentication scheme to be JWT Bearer
     - add the `UseAuthentication` and `UseAuthorization` calls to the middleware configuration
 ```csharp
 ...
 var config = builder.Configuration;
-builder.Services.Configure<AuthenticationOptions>(config.GetSection("Authentication"));
-builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
-
+builder.Services.Configure<AuthenticationOptions>(config.GetSection(AuthenticationOptions.SectionName));
+builder.Services.AddAuthenticationWithJwt(config, builder.Environment.IsDevelopment());
 ...
 app.UseAuthentication();
 app.UseAuthorization();
 ```
 
-### CORS configuration in `Program.cs`
+### CORS configuration
+[CORS is not a security feature. CORS is a W3C standard that allows a server to relax the same-origin policy](https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-8.0#how-cors-works)  
+CORS only affects browsers, which are the ones that block requests when CORS is not configured on the API server, or it is misconfigured
+#### Appsettings
+```json
+{
+    ...
+    "CorsAllowedOrigins": [
+        "http://localhost:5000",
+        "http://localhost:5001"
+    ]
+}
+```
+#### `Program.cs`
 ```csharp
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
-
-const string AllowSpecificOrigins = "_allowSpecificOrigins";
+var config = builder.Configuration;
+builder.Services.Configure<AuthenticationOptions>(config.GetSection(AuthenticationOptions.SectionName));
+builder.Services.AddAuthenticationWithJwt(config, isDevelopment);
+...
+var allowedOrigins = config.GetSection("CorsAllowedOrigins").Get<List<string>>();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: AllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy
-                            .WithOrigins(
-                                "http://localhost:5000",
-                                "http://localhost:5001")
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                      });
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy
+            .WithOrigins(allowedOrigins?.ToArray() ?? [""])
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        });
 });
 ...
 app.UseAuthentication();
-app.UseCors(AllowSpecificOrigins); // <== ADDED!
+app.UseCors(); // <== ADDED!
 app.UseAuthorization();
 ```
 
